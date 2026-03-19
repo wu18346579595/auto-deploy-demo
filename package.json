@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "演示自动发版的网站",
   "scripts": {
-    "test": "echo '测试通过！' && exit 0",
-    "build": "echo '正在打包...' && copy index.html dist\\index.html && echo '打包完成！'"
+    "test": "echo '✅ 所有测试通过！' && exit 0",
+    "build": "node build.js"
   },
   "keywords": ["autodeploy", "demo"],
   "author": "你的名字",
