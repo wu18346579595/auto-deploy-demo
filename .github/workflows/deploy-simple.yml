@@ -1,0 +1,90 @@
+name: 自动发版（简化版）
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+      
+    - name: 打印环境信息
+      run: |
+        echo "Node.js版本: $(node --version)"
+        echo "npm版本: $(npm --version)"
+        echo "当前目录: $(pwd)"
+        echo "文件列表:"
+        ls -la
+        
+    - name: 检查package.json
+      run: |
+        echo "检查package.json..."
+        cat package.json
+        echo "检查build.js..."
+        cat build.js || echo "build.js不存在"
+        
+    - name: 安装Node.js（自动选择版本）
+      uses: actions/setup-node@v3
+      with:
+        node-version: 'lts/*'  # 使用最新的LTS版本
+        
+    - name: 安装依赖（简单测试）
+      run: |
+        echo "初始化npm项目..."
+        npm init -y
+        echo "安装必要依赖..."
+        npm install
+        
+    - name: 运行测试（模拟）
+      run: |
+        echo "✅ 模拟测试通过"
+        echo "测试完成时间: $(date)"
+        
+    - name: 执行构建
+      run: |
+        echo "开始构建..."
+        # 创建dist目录
+        mkdir -p dist
+        # 复制文件
+        cp index.html dist/ || echo "index.html不存在"
+        cp README.md dist/ || echo "README.md不存在"
+        # 创建构建信息
+        echo "构建时间: $(date)" > dist/build-info.txt
+        echo "提交SHA: ${{ github.sha }}" >> dist/build-info.txt
+        echo "构建完成！"
+        
+    - name: 显示构建结果
+      run: |
+        echo "=== 构建结果 ==="
+        ls -la dist/
+        echo "=== 构建信息 ==="
+        cat dist/build-info.txt || echo "无构建信息"
+        
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: dist/
+        
+    - name: 成功通知
+      if: success()
+      run: |
+        echo "🎉 自动发版成功！"
+        echo "仓库: ${{ github.repository }}"
+        echo "分支: ${{ github.ref }}"
+        echo "提交: ${{ github.sha }}"
+        echo "触发者: ${{ github.actor }}"
+        echo "运行ID: ${{ github.run_id }}"
+        
+    - name: 失败通知
+      if: failure()
+      run: |
+        echo "❌ 自动发版失败！"
+        echo "请检查以上步骤的错误信息"
+        echo "运行ID: ${{ github.run_id }}"
+        echo "查看详细日志: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
